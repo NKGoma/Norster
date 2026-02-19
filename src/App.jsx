@@ -8,16 +8,16 @@ import {
   getUserPlaylists,
   getPlaylistTracks,
 } from './spotify';
-import SetupClient from './components/SetupClient';
 import Login from './components/Login';
 import PlaylistPicker from './components/PlaylistPicker';
 import PlayerSetup from './components/PlayerSetup';
 import GameScreen from './components/GameScreen';
 
+const CLIENT_ID = import.meta.env.VITE_SPOTIFY_CLIENT_ID;
+
 // ── View names ────────────────────────────────────────────────────────────
 const VIEWS = {
   BOOT: 'boot',
-  SETUP_CLIENT: 'setup_client',
   LOGIN: 'login',
   PLAYLISTS: 'playlists',
   PLAYER_SETUP: 'player_setup',
@@ -27,7 +27,6 @@ const VIEWS = {
 
 export default function App() {
   const [view, setView] = useState(VIEWS.BOOT);
-  const [clientId, setClientId] = useState('');
   const [accessToken, setAccessToken] = useState(null);
   const [playlists, setPlaylists] = useState([]);
   const [selectedPlaylist, setSelectedPlaylist] = useState(null);
@@ -39,9 +38,6 @@ export default function App() {
   // ── Boot: handle OAuth callback or restore session ────────────────────
 
   useEffect(() => {
-    const storedClientId = localStorage.getItem('norster_client_id') || '';
-    setClientId(storedClientId);
-
     const params = new URLSearchParams(window.location.search);
     const code = params.get('code');
 
@@ -49,13 +45,8 @@ export default function App() {
       // Arrived from Spotify OAuth redirect
       window.history.replaceState({}, '', window.location.pathname);
 
-      if (!storedClientId) {
-        setView(VIEWS.SETUP_CLIENT);
-        return;
-      }
-
       setLoading('Connecting to Spotify...');
-      exchangeCodeForToken(storedClientId, code)
+      exchangeCodeForToken(CLIENT_ID, code)
         .then((data) => {
           saveTokens(data);
           setAccessToken(data.access_token);
@@ -69,25 +60,17 @@ export default function App() {
       return;
     }
 
-    // No OAuth code — check stored token
-    if (!storedClientId) {
-      setView(VIEWS.SETUP_CLIENT);
-      return;
-    }
-
     const { token, refreshToken, expiry } = loadTokens();
 
     if (token && Date.now() < expiry - 30_000) {
-      // Valid token
       setAccessToken(token);
       setView(VIEWS.PLAYLISTS);
       return;
     }
 
     if (refreshToken) {
-      // Try to refresh
       setLoading('Refreshing session...');
-      refreshAccessToken(storedClientId, refreshToken)
+      refreshAccessToken(CLIENT_ID, refreshToken)
         .then((data) => {
           saveTokens(data);
           setAccessToken(data.access_token);
@@ -102,7 +85,7 @@ export default function App() {
     }
 
     setView(VIEWS.LOGIN);
-  }, []); // run once on mount
+  }, []);
 
   // ── Load playlists whenever we land on PLAYLISTS view ────────────────
 
@@ -123,12 +106,6 @@ export default function App() {
   }, [view, accessToken]);
 
   // ── Handlers ──────────────────────────────────────────────────────────
-
-  function handleClientId(id) {
-    localStorage.setItem('norster_client_id', id);
-    setClientId(id);
-    setView(VIEWS.LOGIN);
-  }
 
   async function handlePlaylistSelect(playlist) {
     setSelectedPlaylist(playlist);
@@ -182,16 +159,8 @@ export default function App() {
         </div>
       );
 
-    case VIEWS.SETUP_CLIENT:
-      return <SetupClient onSubmit={handleClientId} />;
-
     case VIEWS.LOGIN:
-      return (
-        <Login
-          clientId={clientId}
-          onChangeClient={() => setView(VIEWS.SETUP_CLIENT)}
-        />
-      );
+      return <Login clientId={CLIENT_ID} />;
 
     case VIEWS.PLAYLISTS:
       return (

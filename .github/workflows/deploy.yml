@@ -27,6 +27,8 @@ jobs:
 
       - name: Build
         run: npm run build
+        env:
+          VITE_SPOTIFY_CLIENT_ID: ${{ secrets.SPOTIFY_CLIENT_ID }}
 
       - name: Deploy to gh-pages branch
         uses: JamesIves/github-pages-deploy-action@v4

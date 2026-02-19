@@ -1,6 +1,6 @@
 import { redirectToSpotifyAuth } from '../spotify';
 
-export default function Login({ clientId, onChangeClient }) {
+export default function Login({ clientId }) {
   return (
     <div className="screen center-screen">
       <div className="setup-card">
@@ -14,10 +14,6 @@ export default function Login({ clientId, onChangeClient }) {
         >
           <SpotifyIcon />
           Connect Spotify
-        </button>
-
-        <button className="btn btn-ghost" onClick={onChangeClient}>
-          Change Client ID
         </button>
       </div>
     </div>
