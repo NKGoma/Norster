@@ -2,7 +2,7 @@ import { useState } from 'react';
 
 export default function SetupClient({ onSubmit }) {
   const [clientId, setClientId] = useState('');
-  const redirectUri = window.location.origin;
+  const redirectUri = window.location.origin + window.location.pathname;
 
   function handleSubmit(e) {
     e.preventDefault();

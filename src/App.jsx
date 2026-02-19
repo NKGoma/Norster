@@ -47,7 +47,7 @@ export default function App() {
 
     if (code) {
       // Arrived from Spotify OAuth redirect
-      window.history.replaceState({}, '', '/');
+      window.history.replaceState({}, '', window.location.pathname);
 
       if (!storedClientId) {
         setView(VIEWS.SETUP_CLIENT);

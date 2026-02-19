@@ -33,7 +33,7 @@ export async function redirectToSpotifyAuth(clientId) {
   const challenge = await generateChallenge(verifier);
   sessionStorage.setItem('pkce_verifier', verifier);
 
-  const redirectUri = window.location.origin;
+  const redirectUri = window.location.origin + window.location.pathname;
   const params = new URLSearchParams({
     response_type: 'code',
     client_id: clientId,
@@ -48,7 +48,7 @@ export async function redirectToSpotifyAuth(clientId) {
 
 export async function exchangeCodeForToken(clientId, code) {
   const verifier = sessionStorage.getItem('pkce_verifier');
-  const redirectUri = window.location.origin;
+  const redirectUri = window.location.origin + window.location.pathname;
 
   const res = await fetch(SPOTIFY_TOKEN_URL, {
     method: 'POST',
@@ -155,6 +155,5 @@ export function getArtists(track) {
 }
 
 export function openInSpotify(trackId) {
-  // Deep-links into the Spotify app on iOS; falls back gracefully.
-  window.location.href = `spotify:track:${trackId}`;
+  window.open(`https://open.spotify.com/track/${trackId}`, '_blank', 'noopener');
 }
